@@ -1,226 +1,275 @@
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { notFound } from 'next/navigation'
 import { getCourse, getRelatedCourses } from '@/lib/courses'
+import { getAllCourseCodes } from '@/lib/courses'
 import Breadcrumb from '@/components/Breadcrumb'
 import CourseCard from '@/components/CourseCard'
-import { buildMeta, courseJsonLd, breadcrumbJsonLd } from '@/lib/seo'
-import { Building2, BookOpen, Award, CheckCircle, ArrowRight } from 'lucide-react'
+import ContactCTA from '@/components/ContactCTA'
+import { MessageCircle, Hash, BookOpen, Building2, GraduationCap, CheckCircle2, Star, Clock, Shield } from 'lucide-react'
 
-export const revalidate = 86400 // Cache for 24 hours (ISR)
+const WHATSAPP_URL = 'https://wa.me/923218344663?text=Hi%20ZeeTech%2C%20I%20need%20help%20with%20my%20'
+const DISCORD_URL = 'https://discord.com/users/zeetech_pro'
 
 interface PageProps {
   params: Promise<{ code: string }>
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { code } = await params
-  const course = await getCourse(code)
-  if (!course) return {}
-  return buildMeta({
-    title: `${course.code} — ${course.title}`,
-    description: `${course.title} (${course.code}) at ${course.university.name}. ${course.level} course worth ${course.credits} credits. ${course.description.slice(0, 120)}…`,
-    path: `/course/${course.code.toLowerCase()}`,
-  })
+export async function generateStaticParams() {
+  const codes = await getAllCourseCodes()
+  return codes.map((code) => ({ code: code.toLowerCase() }))
 }
 
-export default async function CoursePage({ params }: PageProps) {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { code } = await params
-  const course = await getCourse(code)
+  const course = await getCourse(code.toUpperCase())
+  if (!course) return { title: 'Course Not Found' }
+
+  const title = `${course.code} Assignment Help — ${course.title} | ZeeTech`
+  const description = `Struggling with ${course.code} (${course.title}) at ${course.university.name}? Get expert assignment help from ZeeTech. Fast, original, and reliable academic assistance. Contact via WhatsApp or Discord.`
+
+  return {
+    title,
+    description,
+    keywords: [
+      `${course.code} assignment help`,
+      `${course.code} homework help`,
+      `${course.title} assignment`,
+      `${course.university.name} assignments`,
+      `${course.subject.name} assignment help`,
+      'university assignment help',
+      'final year project help',
+      'ZeeTech academic help',
+    ],
+    openGraph: { title, description, type: 'website' },
+  }
+}
+
+export const revalidate = 3600
+
+export default async function CourseDetailPage({ params }: PageProps) {
+  const { code } = await params
+  const course = await getCourse(code.toUpperCase())
   if (!course) notFound()
 
-  const relatedCourses = await getRelatedCourses(course.code, course.subjectId, 4)
-
-  const courseJd = courseJsonLd({
-    code: course.code,
-    title: course.title,
-    description: course.description,
-    level: course.level,
-    credits: course.credits,
-    university: course.university,
-    subject: course.subject,
-  })
-
-  const breadcrumbLd = breadcrumbJsonLd([
-    { name: 'Home', url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000' },
-    { name: 'Courses', url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/search` },
-    { name: course.subject.name, url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/search?subject=${course.subject.slug}` },
-    { name: course.code, url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/course/${course.code.toLowerCase()}` },
-  ])
-
-  const outcomes = course.outcomes.split(';').map((o) => o.trim()).filter(Boolean)
-
-  const LEVEL_COLORS: Record<string, string> = {
-    Undergraduate: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-    Postgraduate: 'bg-purple-100 text-purple-800 border-purple-200',
-    Doctoral: 'bg-orange-100 text-orange-800 border-orange-200',
-  }
+  const related = await getRelatedCourses(course.code, course.subjectId, 3)
+  const outcomes = course.outcomes ? course.outcomes.split('|') : []
+  const waUrl = `${WHATSAPP_URL}${encodeURIComponent(course.code)}%20assignment!`
 
   return (
-    <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(courseJd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-24">
+      {/* JSON-LD */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Course',
+            name: course.title,
+            courseCode: course.code,
+            description: course.description,
+            keywords: `${course.code} assignment help, ${course.title} help, ${course.subject.name} assignment`,
+            provider: {
+              '@type': 'CollegeOrUniversity',
+              name: course.university.name,
+            },
+          }),
+        }}
+      />
 
-      {/* Hero */}
-      <div className="bg-gradient-to-br from-slate-900 to-blue-950 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <Breadcrumb items={[
-            { label: 'Courses', href: '/search' },
-            { label: course.subject.name, href: `/search?subject=${course.subject.slug}` },
-            { label: course.code },
-          ]} />
+      <Breadcrumb
+        items={[
+          { label: 'Universities', href: '/universities' },
+          { label: course.university.name, href: `/university/${course.university.slug}` },
+          { label: course.code },
+        ]}
+      />
 
-          <div className="mt-8">
-            <div className="flex flex-wrap items-center gap-3 mb-4">
-              <span className="inline-flex items-center bg-blue-700 text-white text-sm font-bold px-3 py-1.5 rounded-lg font-mono tracking-wide">
-                {course.code}
-              </span>
-              <span className={`inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded-full border ${LEVEL_COLORS[course.level] || 'bg-slate-100 text-slate-700 border-slate-200'}`}>
-                {course.level}
-              </span>
-              <span className="flex items-center gap-1 text-blue-300 text-sm">
-                <Award className="w-4 h-4" />
-                {course.credits} credits
-              </span>
+      {/* ── Hero Banner ─────────────────────────────────────────────────── */}
+      <div className="mt-6 mb-8 bg-gradient-to-br from-blue-700 via-blue-800 to-indigo-900 rounded-3xl p-8 text-white shadow-xl">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <span className="inline-block bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full mb-3 font-mono tracking-wider">
+              {course.code}
+            </span>
+            <h1 className="text-3xl font-extrabold mb-2 leading-tight">{course.title}</h1>
+            <div className="flex flex-wrap items-center gap-4 text-blue-200 text-sm mb-4">
+              <span className="flex items-center gap-1.5"><Building2 className="w-4 h-4" />{course.university.name}</span>
+              <span className="flex items-center gap-1.5"><BookOpen className="w-4 h-4" />{course.subject.name}</span>
+              <span className="flex items-center gap-1.5"><GraduationCap className="w-4 h-4" />{course.level}</span>
             </div>
-
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-4 leading-tight max-w-4xl">
-              {course.title}
-            </h1>
-
-            <div className="flex flex-wrap items-center gap-4 text-blue-200 text-sm">
-              <Link
-                href={`/university/${course.university.slug}`}
-                className="flex items-center gap-1.5 hover:text-white transition-colors"
-              >
-                <Building2 className="w-4 h-4" />
-                {course.university.name}
-              </Link>
-              <Link
-                href={`/search?subject=${course.subject.slug}`}
-                className="flex items-center gap-1.5 hover:text-white transition-colors"
-              >
-                <BookOpen className="w-4 h-4" />
-                {course.subject.name}
-              </Link>
-            </div>
+            <p className="text-blue-100 text-base leading-relaxed max-w-2xl">{course.description}</p>
           </div>
+        </div>
+
+        {/* CTA Buttons */}
+        <div className="mt-6 flex flex-col sm:flex-row gap-3">
+          <a
+            href={waUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-green-500 hover:bg-green-400 text-white font-bold text-base rounded-2xl transition-all duration-200 shadow-lg hover:shadow-green-400/40 hover:scale-105"
+          >
+            <MessageCircle className="w-5 h-5" />
+            Get Help on WhatsApp
+          </a>
+          <a
+            href={DISCORD_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-white/15 hover:bg-white/25 text-white font-bold text-base rounded-2xl border border-white/30 transition-all duration-200 hover:scale-105"
+          >
+            <Hash className="w-5 h-5" />
+            Chat on Discord
+          </a>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main content */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Overview */}
-            <section className="bg-white rounded-2xl border border-slate-200 p-6">
-              <h2 className="text-xl font-bold text-slate-900 mb-4">Course Overview</h2>
-              <p className="text-slate-600 leading-relaxed text-base">{course.description}</p>
-            </section>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-            {/* Learning outcomes */}
-            {outcomes.length > 0 && (
-              <section className="bg-white rounded-2xl border border-slate-200 p-6">
-                <h2 className="text-xl font-bold text-slate-900 mb-4">Learning Outcomes</h2>
-                <p className="text-slate-500 text-sm mb-4">Upon successful completion of this course, students will be able to:</p>
-                <ul className="space-y-3">
-                  {outcomes.map((outcome, i) => (
-                    <li key={i} className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-slate-700 text-sm leading-relaxed">{outcome}</span>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
+        {/* ── Main Content ────────────────────────────────────────────── */}
+        <div className="lg:col-span-2 space-y-8">
 
-            {/* Related courses */}
-            {relatedCourses.length > 0 && (
-              <section>
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-slate-900">Related Courses</h2>
-                  <Link
-                    href={`/search?subject=${course.subject.slug}`}
-                    className="text-sm text-blue-700 hover:text-blue-800 flex items-center gap-1 font-medium transition-colors"
-                  >
-                    View all <ArrowRight className="w-4 h-4" />
-                  </Link>
+          {/* How We Can Help */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-7">
+            <h2 className="text-xl font-bold text-slate-900 mb-5 flex items-center gap-2">
+              <Star className="w-5 h-5 text-yellow-500" />
+              How We Can Help with {course.code}
+            </h2>
+            <p className="text-slate-600 mb-5 leading-relaxed">
+              At <strong>ZeeTech Academic Help</strong>, we have a team of expert writers and subject specialists who are familiar with <strong>{course.title}</strong> at <strong>{course.university.name}</strong>. Whether you need a complete assignment written, editing support, or guidance on exam preparation, we are here to help!
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                'Assignments & Coursework',
+                'Essays & Reports',
+                'Final Year Projects',
+                'Dissertations & Theses',
+                'Case Study Analysis',
+                'Lab Reports',
+                'Exam Preparation',
+                'Literature Reviews',
+              ].map((service) => (
+                <div key={service} className="flex items-center gap-2.5 text-sm text-slate-700">
+                  <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
+                  {service}
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {relatedCourses.map((rc) => (
-                    <CourseCard
-                      key={rc.id}
-                      code={rc.code}
-                      title={rc.title}
-                      description={rc.description}
-                      level={rc.level}
-                      credits={rc.credits}
-                      universityName={rc.university.name}
-                      universitySlug={rc.university.slug}
-                      subjectName={rc.subject.name}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
+              ))}
+            </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Course details */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6">
-              <h3 className="font-bold text-slate-900 mb-4">Course Details</h3>
-              <dl className="space-y-3">
-                {[
-                  { label: 'Course Code', value: course.code },
-                  { label: 'Level', value: course.level },
-                  { label: 'Credits', value: `${course.credits} credits` },
-                  { label: 'Subject', value: course.subject.name },
-                ].map(({ label, value }) => (
-                  <div key={label} className="flex justify-between text-sm">
-                    <dt className="text-slate-500">{label}</dt>
-                    <dd className="font-semibold text-slate-800 text-right">{value}</dd>
-                  </div>
+          {/* Learning Outcomes */}
+          {outcomes.length > 0 && (
+            <div className="bg-white rounded-2xl border border-slate-200 p-7">
+              <h2 className="text-xl font-bold text-slate-900 mb-5 flex items-center gap-2">
+                <GraduationCap className="w-5 h-5 text-blue-700" />
+                What We Cover in {course.code}
+              </h2>
+              <ul className="space-y-3">
+                {outcomes.map((outcome, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">{i + 1}</span>
+                    <span className="text-slate-700 text-sm leading-relaxed">{outcome}</span>
+                  </li>
                 ))}
-              </dl>
+              </ul>
             </div>
+          )}
 
-            {/* University info */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6">
-              <h3 className="font-bold text-slate-900 mb-4">Offered by</h3>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-700 to-blue-900 flex items-center justify-center flex-shrink-0">
-                  <span className="text-white font-bold text-lg">
-                    {course.university.name[0]}
-                  </span>
-                </div>
-                <div>
-                  <p className="font-semibold text-slate-900 text-sm leading-tight">{course.university.name}</p>
-                  <p className="text-slate-500 text-xs">{course.university.location}</p>
-                </div>
+          {/* Related Courses */}
+          {related.length > 0 && (
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 mb-5">More {course.subject.name} Assignments We Help With</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {related.map((r) => (
+                  <CourseCard
+                    key={r.id}
+                    code={r.code}
+                    title={r.title}
+                    description={r.description}
+                    level={r.level}
+                    credits={r.credits}
+                    universityName={r.university.name}
+                    universitySlug={r.university.slug}
+                    subjectName={r.subject.name}
+                  />
+                ))}
               </div>
-              <Link
-                href={`/university/${course.university.slug}`}
-                className="block w-full text-center py-2.5 bg-blue-700 text-white text-sm font-medium rounded-xl hover:bg-blue-800 transition-colors"
-              >
-                View All Courses at This University
-              </Link>
             </div>
+          )}
+        </div>
 
-            {/* Subject quick link */}
-            <div className="bg-blue-50 rounded-2xl border border-blue-100 p-6">
-              <h3 className="font-bold text-slate-900 mb-2">Explore {course.subject.name}</h3>
-              <p className="text-slate-500 text-sm mb-4">Browse all courses in this subject area.</p>
-              <Link
-                href={`/search?subject=${course.subject.slug}`}
-                className="block w-full text-center py-2.5 bg-white text-blue-700 text-sm font-semibold rounded-xl hover:bg-blue-50 transition-colors border border-blue-200"
+        {/* ── Sidebar ─────────────────────────────────────────────────── */}
+        <div className="space-y-6">
+
+          {/* Contact Card */}
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-6">
+            <h3 className="font-bold text-slate-900 text-lg mb-1">Get Assignment Help</h3>
+            <p className="text-slate-500 text-sm mb-5">Contact us now for fast, reliable assistance with {course.code}.</p>
+            <div className="space-y-3">
+              <a
+                href={waUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 w-full py-3 bg-green-500 hover:bg-green-400 text-white font-bold rounded-xl transition-colors shadow-md"
               >
-                Browse {course.subject.name}
-              </Link>
+                <MessageCircle className="w-4 h-4" />
+                WhatsApp: +92 321 8344663
+              </a>
+              <a
+                href={DISCORD_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-colors"
+              >
+                <Hash className="w-4 h-4" />
+                Discord: zeetech_pro
+              </a>
             </div>
+          </div>
+
+          {/* Why Us */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-6">
+            <h3 className="font-bold text-slate-900 mb-4">Why ZeeTech?</h3>
+            <ul className="space-y-3">
+              {[
+                { icon: Shield, text: '100% Original Work', detail: 'Plagiarism-free, written from scratch' },
+                { icon: Clock, text: 'Fast Turnaround', detail: 'Delivered on your deadline, guaranteed' },
+                { icon: Star, text: 'Expert Writers', detail: 'Subject specialists for every course' },
+                { icon: CheckCircle2, text: 'Affordable Prices', detail: 'Competitive rates for students worldwide' },
+              ].map(({ icon: Icon, text, detail }) => (
+                <li key={text} className="flex items-start gap-3">
+                  <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                    <Icon className="w-3.5 h-3.5 text-blue-700" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-800">{text}</p>
+                    <p className="text-xs text-slate-500">{detail}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* University Quick Facts */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-6">
+            <h3 className="font-bold text-slate-900 mb-4">Course Info</h3>
+            <dl className="space-y-2.5 text-sm">
+              <div className="flex justify-between"><dt className="text-slate-500">Code</dt><dd className="font-mono font-bold text-blue-700">{course.code}</dd></div>
+              <div className="flex justify-between"><dt className="text-slate-500">Level</dt><dd className="font-medium text-slate-700">{course.level}</dd></div>
+              <div className="flex justify-between"><dt className="text-slate-500">Subject</dt><dd className="font-medium text-slate-700">{course.subject.name}</dd></div>
+              <div className="flex justify-between"><dt className="text-slate-500">University</dt>
+                <dd className="font-medium text-slate-700 text-right max-w-[140px] truncate">
+                  <Link href={`/university/${course.university.slug}`} className="hover:text-blue-700 transition-colors">{course.university.name}</Link>
+                </dd>
+              </div>
+            </dl>
           </div>
         </div>
       </div>
-    </>
+
+      {/* Sticky CTA bar */}
+      <ContactCTA />
+    </div>
   )
 }

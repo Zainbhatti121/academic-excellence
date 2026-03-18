@@ -2,18 +2,18 @@ import { prisma } from './prisma'
 import type { PaginatedResult, SearchFilters } from '@/types'
 
 export async function getUniversities(filters: SearchFilters = {}) {
-  const { page = 1, pageSize = 12, q } = filters
+  const { page = 1, pageSize = 12, q, country } = filters
   const skip = (page - 1) * pageSize
 
-  const where = q
-    ? {
-        OR: [
-          { name: { contains: q, mode: 'insensitive' as const } },
-          { location: { contains: q, mode: 'insensitive' as const } },
-          { description: { contains: q, mode: 'insensitive' as const } },
-        ],
-      }
-    : {}
+  const where: Record<string, unknown> = {}
+  if (country) where.country = country
+  if (q) {
+    where.OR = [
+      { name: { contains: q, mode: 'insensitive' as const } },
+      { location: { contains: q, mode: 'insensitive' as const } },
+      { description: { contains: q, mode: 'insensitive' as const } },
+    ]
+  }
 
   const [data, total] = await Promise.all([
     prisma.university.findMany({

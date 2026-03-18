@@ -4,6 +4,7 @@ export interface University {
   slug: string
   description: string
   location: string
+  country: string
   website: string
   established: number
   logoUrl: string
@@ -59,6 +60,7 @@ export interface SearchFilters {
   q?: string
   university?: string
   subject?: string
+  country?: string
   page?: number
   pageSize?: number
 }

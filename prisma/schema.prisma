@@ -16,6 +16,7 @@ model University {
   slug        String   @unique
   description String
   location    String
+  country     String   @default("UK")
   website     String   @default("")
   established Int      @default(0)
   logoUrl     String   @default("")
