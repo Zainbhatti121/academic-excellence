@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+export const dynamic = 'force-dynamic'
 import { searchAll } from '@/lib/search'
 import { getCourses } from '@/lib/courses'
 import UniversityCard from '@/components/UniversityCard'

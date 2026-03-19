@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -15,10 +16,7 @@ interface PageProps {
   params: Promise<{ code: string }>
 }
 
-export async function generateStaticParams() {
-  const codes = await getAllCourseCodes()
-  return codes.map((code) => ({ code: code.toLowerCase() }))
-}
+// Dynamic params only to prevent free-tier DB connection timeouts on build
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { code } = await params
