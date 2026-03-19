@@ -4,7 +4,7 @@ import { getFeaturedUniversities } from '@/lib/universities'
 import { getFeaturedCourses } from '@/lib/courses'
 import { getSubjects } from '@/lib/search'
 import ContactCTA from '@/components/ContactCTA'
-import { MessageCircle, Hash, CheckCircle2, Star, Clock, Shield, Globe, ChevronRight } from 'lucide-react'
+import { MessageCircle, Hash, CheckCircle2, Star, Clock, Shield, Globe, ChevronRight, PenTool, Code, FileText, PhoneCall, Rocket, ArrowRight } from 'lucide-react'
 
 const WHATSAPP_URL = 'https://wa.me/923218344663?text=Hi%20ZeeTech%2C%20I%20need%20help%20with%20my%20university%20assignment!'
 const DISCORD_URL = 'https://discord.com/users/zeetech_pro'
@@ -119,29 +119,61 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── Services ─────────────────────────────────────────────────────── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-slate-900 mb-3">What We Help With</h2>
-          <p className="text-slate-500 text-lg">From quick coursework to full dissertations — we have you covered</p>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {[
-            { emoji: '📝', title: 'Assignments', desc: 'Coursework & homework' },
-            { emoji: '✍️', title: 'Essays & Reports', desc: 'Structured academic writing' },
-            { emoji: '🎓', title: 'Final Year Projects', desc: 'Complete FYP support' },
-            { emoji: '📚', title: 'Dissertations', desc: 'Full thesis writing' },
-            { emoji: '🔬', title: 'Lab Reports', desc: 'Science & engineering labs' },
-            { emoji: '📊', title: 'Case Studies', desc: 'Business & law cases' },
-            { emoji: '📖', title: 'Literature Reviews', desc: 'Research synthesis' },
-            { emoji: '🎯', title: 'Exam Prep', desc: 'Past papers & revision' },
-          ].map(({ emoji, title, desc }) => (
-            <div key={title} className="bg-white border border-slate-200 rounded-2xl p-5 hover:border-blue-300 hover:shadow-md transition-all group">
-              <div className="text-3xl mb-3">{emoji}</div>
-              <div className="font-semibold text-slate-900 text-sm group-hover:text-blue-700 transition-colors">{title}</div>
-              <div className="text-xs text-slate-500 mt-1">{desc}</div>
-            </div>
-          ))}
+      {/* ── Core Services ─────────────────────────────────────────────────────── */}
+      <section className="bg-slate-50 py-24 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-16">
+            <span className="text-blue-600 font-bold mb-3 block tracking-wider uppercase text-sm">What We Do</span>
+            <h2 className="text-4xl lg:text-5xl font-extrabold text-slate-900 mb-5 tracking-tight">Our Core Services</h2>
+            <p className="text-slate-500 text-xl max-w-2xl mx-auto leading-relaxed">Expert academic assistance tailored to global students. Pick your required service below.</p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Service 1: Assignments */}
+            <Link href="/services/assignments" className="group bg-white rounded-3xl p-8 border border-slate-200 hover:border-blue-400 hover:shadow-2xl transition-all duration-300 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110" />
+              <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center mb-8 relative z-10 text-white shadow-lg shadow-blue-600/30">
+                <PenTool className="w-8 h-8" />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-4 relative z-10">University Assignments</h3>
+              <p className="text-slate-600 mb-8 leading-relaxed relative z-10">
+                Struggling with deadlines? Get custom, 100% plagiarism-free assignments written exactly to your marking rubric by subject specialists.
+              </p>
+              <div className="flex items-center text-blue-600 font-bold group-hover:translate-x-2 transition-transform relative z-10">
+                Explore Assignments <ArrowRight className="w-5 h-5 ml-2" />
+              </div>
+            </Link>
+
+            {/* Service 2: FYP */}
+            <Link href="/services/final-year-projects" className="group bg-slate-900 rounded-3xl p-8 border border-slate-800 hover:border-purple-500 hover:shadow-2xl hover:shadow-purple-900/50 transition-all duration-300 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-purple-900/50 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110" />
+              <div className="w-16 h-16 rounded-2xl bg-purple-500 flex items-center justify-center mb-8 relative z-10 text-white shadow-lg shadow-purple-500/30">
+                <Rocket className="w-8 h-8" />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-4 relative z-10">Final Year Projects</h3>
+              <p className="text-slate-400 mb-8 leading-relaxed relative z-10">
+                Complete end-to-end development for Computer Science FYPs. From the initial code to the final working prototype and slides.
+              </p>
+              <div className="flex items-center text-purple-400 font-bold group-hover:translate-x-2 transition-transform relative z-10">
+                View Project Help <ArrowRight className="w-5 h-5 ml-2" />
+              </div>
+            </Link>
+
+            {/* Service 3: Documentation */}
+            <Link href="/services/documentation" className="group bg-white rounded-3xl p-8 border border-slate-200 hover:border-emerald-400 hover:shadow-2xl transition-all duration-300 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110" />
+              <div className="w-16 h-16 rounded-2xl bg-emerald-500 flex items-center justify-center mb-8 relative z-10 text-white shadow-lg shadow-emerald-500/30">
+                <FileText className="w-8 h-8" />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-4 relative z-10">Project Documentation</h3>
+              <p className="text-slate-600 mb-8 leading-relaxed relative z-10">
+                Need SRS or UML diagrams? We provide university-grade technical documentation, architecture specs, and user manuals.
+              </p>
+              <div className="flex items-center text-emerald-600 font-bold group-hover:translate-x-2 transition-transform relative z-10">
+                See Documentation <ArrowRight className="w-5 h-5 ml-2" />
+              </div>
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -211,29 +243,41 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── Final CTA ─────────────────────────────────────────────────────── */}
-      <section className="max-w-3xl mx-auto px-4 py-16 text-center">
-        <h2 className="text-3xl font-bold text-slate-900 mb-4">Ready to Get Help?</h2>
-        <p className="text-slate-500 text-lg mb-8">Search your course code above or contact us directly. We reply within minutes!</p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <a
-            href={WHATSAPP_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-green-500 hover:bg-green-400 text-white font-bold rounded-2xl transition-all hover:scale-105 shadow-lg"
-          >
-            <MessageCircle className="w-5 h-5" />
-            WhatsApp: +92 321 8344663
-          </a>
-          <a
-            href={DISCORD_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-2xl transition-all hover:scale-105"
-          >
-            <Hash className="w-5 h-5" />
-            Discord: zeetech_pro
-          </a>
+      {/* ── Talk to an Expert ─────────────────────────────────────────────────────── */}
+      <section className="bg-gradient-to-br from-blue-900 to-indigo-950 text-white py-24 relative overflow-hidden">
+        {/* Decorative background elements */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-green-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl" />
+        
+        <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
+          <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center mx-auto mb-8 relative">
+            <div className="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-20" />
+            <PhoneCall className="w-10 h-10 text-green-400" />
+          </div>
+          <h2 className="text-4xl lg:text-5xl font-extrabold mb-6">Talk to an Academic Expert</h2>
+          <p className="text-blue-200 text-xl mb-12 max-w-2xl mx-auto leading-relaxed">
+            Not sure what you need? Send us your brief and we will evaluate it for free. Our freelance consultants reply within minutes.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-5 justify-center">
+            <a
+              href={WHATSAPP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-3 px-10 py-5 bg-green-500 hover:bg-green-400 text-white font-bold text-lg rounded-full transition-all hover:scale-105 shadow-xl shadow-green-500/30"
+            >
+              <MessageCircle className="w-6 h-6" />
+              Chat on WhatsApp Now
+            </a>
+            <a
+              href={DISCORD_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-3 px-10 py-5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-lg rounded-full transition-all hover:scale-105"
+            >
+              <Hash className="w-6 h-6" />
+              Add us on Discord
+            </a>
+          </div>
         </div>
       </section>
 
